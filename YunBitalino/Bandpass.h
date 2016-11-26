@@ -23,3 +23,27 @@ class  BandpassFilter
          (v[2] - v[0]);
     }
 };
+
+//Band pass bessel filter order=1 alpha1=0.00001 alpha2=0.0008
+class  RespirationFilter
+{
+	public:
+		RespirationFilter()
+		{
+			v[0]=0.0;
+			v[1]=0.0;
+		}
+	private:
+		float v[3];
+	public:
+		float step(float x) //class II
+		{
+			v[0] = v[1];
+			v[1] = v[2];
+			v[2] = (2.754403840435478909e-3 * x)
+				 + (-0.99504856220746773499 * v[0])
+				 + (1.99504824716138795537 * v[1]);
+			return
+				 (v[2] - v[0]);
+		}
+};
