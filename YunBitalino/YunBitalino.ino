@@ -13,6 +13,9 @@
 #define RESPIRATION_THRESHOLD 380
 #define MIN_BREATH_INTERVAL 400
 
+#define PIN_OF_TEMPERATURE 2
+#define CALCULATE_TEMPERATURE(analogInput) ((5.0 * analogInput * 100.0) / 1024);
+
 #define MINUTE_IN_MS 60000.0
 #define TIME_WINDOW_IN_MS 10000
 
@@ -38,6 +41,7 @@ unsigned long lastPrint;
 
 int ecgValue;
 int breathValue;
+float temp;
 
 void setup() {
   Serial.begin(57600);
@@ -74,6 +78,11 @@ void loop() {
       Serial.print("Breath: ");
       Serial.println(current);
       Bridge.put("respiration", String(current));
+
+      calculateTemperature();
+      Serial.print("Temp: ");
+      Serial.println(temp);
+      Bridge.put("temp", String(temp));
     }
   }
 }
@@ -112,6 +121,16 @@ int peaksPerMinute(LinkedList<unsigned long>* list) {
     return -1;
   }
 }
+
+void calculateTemperature() {
+  temp = 0;
+  for (int i = 0; i < 5; ++i) {
+    temp += CALCULATE_TEMPERATURE(analogRead(PIN_OF_TEMPERATURE));
+  }
+  temp /= 5;
+}
+
+
 
 
 
