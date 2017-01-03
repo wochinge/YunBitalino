@@ -10,7 +10,7 @@ USER_ACCESS_TOKEN = ''
 AUTH = {'access_token': USER_ACCESS_TOKEN}
 
 HOST = ''
-ENDPOINT = HOST + '/v1/users/' + UUID + 'samples'
+ENDPOINT = HOST + '/v1/users/' + UUID + '/samples'
 
 TEN_MILLIS = 0.01
 
