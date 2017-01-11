@@ -5,15 +5,16 @@ import requests
 sys.path.insert(0, '/usr/lib/python2.7/bridge')
 from bridgeclient import BridgeClient as bridgeclient
 
-UUID = ''
-USER_ACCESS_TOKEN = ''
+UUID = 'e9ef17b3-e045-4966-99dd-854c35933aa5'
+USER_ACCESS_TOKEN = 'e0225677f6d675e18f9794f8932b67de'
 AUTH = {'access_token': USER_ACCESS_TOKEN}
 
-HOST = ''
+HOST = 'http://api.nightcare.fbrix.corvus.uberspace.de'
 ENDPOINT = HOST + '/v1/users/' + UUID + '/samples'
 
 TEN_MILLIS = 0.01
 
+bridge = {}
 bridge = bridgeclient()
 data = {'auth': AUTH}
 
@@ -54,8 +55,11 @@ def post(bpm_value, respiration_value, temperature):
         sample_data['temperature'] = [create_post_data(temperature)]
     if sample_data:
         data['samples'] = sample_data
-        print(data)
-        requests.post(ENDPOINT, json=data)
+        try:
+            response = requests.post(ENDPOINT, json=data)
+            bridge.put('response_status', '{}'.format(response.status_code))
+        except:
+            bridge.put('response_status', '0')
         del data['samples']
 
 

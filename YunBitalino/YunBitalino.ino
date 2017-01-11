@@ -19,6 +19,9 @@
 #define MINUTE_IN_MS 60000.0
 #define TIME_WINDOW_IN_MS 10000
 
+#define ERROR_PIN 2
+char errorBuffer[4];
+
 #define PRINT_INTERVALL_IN_MS 5000
 
 #define FIRST(list) (list->get(0))
@@ -45,8 +48,11 @@ float temp;
 
 void setup() {
   Serial.begin(57600);
-  Bridge.begin();
-  mqtt.runShellCommandAsynchronously("python /root/yun_client.py");
+  if (!DEBUG) {
+    Bridge.begin();
+    mqtt.runShellCommandAsynchronously("python /root/yun_client.py");
+    pinMode(ERROR_PIN, OUTPUT); 
+  }
 }
 
 void loop() {
@@ -61,13 +67,14 @@ void loop() {
   if (DEBUG) {
     Serial.print(timeOfMeasurement);
     Serial.print(": ");
-    Serial.println(breathValue);   
+    Serial.println(ecgValue);   
   } else {
     checkECGPeak(ecgValue);
     checkBreathPeak(breathValue);
     
     // Print bpm in regular intervalls
     if (timeOfMeasurement - lastPrint > PRINT_INTERVALL_IN_MS) {
+      checkError();
       lastPrint = timeOfMeasurement;
       int current = peaksPerMinute(&ecgPeaks);
       Serial.print("BPM: ");
@@ -128,6 +135,18 @@ void calculateTemperature() {
     temp += CALCULATE_TEMPERATURE(analogRead(PIN_OF_TEMPERATURE));
   }
   temp /= 5;
+}
+
+void checkError() {
+  memset(errorBuffer, 0, 4);
+  Bridge.get("response_status", errorBuffer, 4);
+  Bridge.put("response_status", "1");
+  if (errorBuffer[0] != '2') {
+    digitalWrite(ERROR_PIN, HIGH);
+  } else {
+    digitalWrite(ERROR_PIN, LOW);
+  }
+  Serial.println(errorBuffer);
 }
 
 
