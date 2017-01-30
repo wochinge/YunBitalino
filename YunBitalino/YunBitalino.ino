@@ -1,3 +1,16 @@
+/**
+ * Sketch for reading healt data and sending it to a REST API with an Arduino Yun.
+ * 
+ * Note, that you need a python script as counter part on the Linux part of the Arduino Yun, 
+ * which takes the values from the bridge and executes the actual HTTP requests.
+ * 
+ * Created by: Tobias Wochinger
+ * Created: 01 Feb 2017
+ * 
+ * https://github.com/wochinge/YunBitalino
+ * 
+ */
+
 #include <LinkedList.h>
 #include <Bridge.h>
 #include <Process.h>
@@ -22,7 +35,7 @@
 #define ERROR_PIN 2
 char errorBuffer[4];
 
-#define PRINT_INTERVALL_IN_MS 5000
+#define PRINT_INTERVALL_IN_MS 3000
 
 #define FIRST(list) (list->get(0))
 #define LAST(list) (list->get(list->size() - 1))
@@ -82,6 +95,7 @@ void loop() {
       Bridge.put("bpm", String(current));
 
       current = peaksPerMinute(&breathPeaks);
+      current = current >= 300 ? -1 : current;
       Serial.print("Breath: ");
       Serial.println(current);
       Bridge.put("respiration", String(current));
@@ -110,6 +124,9 @@ void checkBreathPeak(int value) {
   }
 }
 
+/**
+ * 
+ */
 void refreshList(LinkedList<unsigned long>* list, int value) {
   list->add(timeOfMeasurement);
   removeTooOldPeaks(list);
@@ -125,7 +142,7 @@ int peaksPerMinute(LinkedList<unsigned long>* list) {
   if (list->size() > 1) {
       return list->size() * (MINUTE_IN_MS / (timeOfMeasurement - FIRST(list)));
   } else {
-    return -1;
+    return 0;
   }
 }
 
